@@ -14,20 +14,20 @@ def load_remote_image(url):
         image = Image.open(BytesIO(response.content)).convert("RGB")
         return image
     except requests.exceptions.RequestException as e:
-        print(f"Błąd: {e}")
+        print(f"Blad: {e}")
         if 'response' in locals() and response is not None:
              print(f"Status HTTP: {response.status_code}")
         return None
     except Exception as e:
-        print(f"Błąd przetwarzania: {e}")
+        print(f"Blad przetwarzania: {e}")
         return None
 
 def display_histogram_data(img_np):
     img_gray = np.dot(img_np[...,:3], [0.2989, 0.5870, 0.1140])
     hist, bins = np.histogram(img_gray.ravel(), bins=256, range=[0, 256])
     
-    print("\n--- Analiza Wstępna Histogramu (Intensywność) ---")
-    print("Wartość | Liczba Pikseli")
+    print("\n--- Analiza Wstepna Histogramu (Intensywnosc) ---")
+    print("Wartosc | Liczba Pikseli")
     print("-------------------------")
     
     intensities = [0, 1, 50, 127, 200, 254, 255]
@@ -39,7 +39,7 @@ def display_histogram_data(img_np):
     for i, color in enumerate(colors):
         channel_data = img_np[:, :, i].ravel()
         mean = np.mean(channel_data)
-        print(f"Średnia intensywność kanału {color}: {mean:.2f}")
+        print(f"Srednia intensywnosc kanalu {color}: {mean:.2f}")
 
     return img_gray.ravel()
 
@@ -67,33 +67,33 @@ def assess_quality(hist_flat):
     is_flawed = False
 
     if Mu < 50:
-        quality_score += "WADLIWE: Niedostatecznie naświetlone (za ciemne). "
+        quality_score += "WADLIWE: Niedostatecznie naswietlone (za ciemne). "
         is_flawed = True
     elif Mu > 200:
-        quality_score += "WADLIWE: Prześwietlone (za jasne). "
+        quality_score += "WADLIWE: Przeswietlone (za jasne). "
         is_flawed = True
 
     if RR < 0.6:
-        quality_score += "WADLIWE: Niski kontrast (spłaszczony histogram). "
+        quality_score += "WADLIWE: Niski kontrast (splaszczony histogram). "
         is_flawed = True
     
     if CP_total > 1.0:
-        quality_score += f"WADLIWE: Duże przycięcie (clipping) ({CP_total:.2f}% pikseli na krańcach - utrata szczegółów). "
+        quality_score += f"WADLIWE: Duze przyciecie (clipping) ({CP_total:.2f}% pikseli na krancach - utrata szczegolow). "
         is_flawed = True
     
     if not is_flawed:
-        quality_score = "DOBRA Jakość (Zrównoważona ekspozycja i kontrast)."
+        quality_score = "DOBRA Jakosc (Zrownowazona ekspozycja i kontrast)."
 
-    print("\n--- WERDYKT JAKOŚCI NA PODSTAWIE ANALIZY ---")
-    print(f"1. Średnia Intensywność (Mu): {Mu:.2f} (Ekspozycja)")
+    print("\n--- WERDYKT JAKOSCI NA PODSTAWIE ANALIZY ---")
+    print(f"1. Srednia Intensywnosc (Mu): {Mu:.2f} (Ekspozycja)")
     print(f"2. Zakres Tonalny (RR): {RR:.2f} (Kontrast, 1.0 to idealny zakres)")
-    print(f"3. Przycięcie (Clipping CP): {CP_total:.2f}% (Utrata detali w cieniach/światłach)")
+    print(f"3. Przyciecie (Clipping CP): {CP_total:.2f}% (Utrata detali w cieniach/swiatlach)")
     print(f"WYNIK: {quality_score}")
     
     return is_flawed, quality_score
 
 def improve_quality_with_eq(img_pil):
-    print("\n--- Zastosowanie Wyrównania Histogramu (Bonus) ---")
+    print("\n--- Zastosowanie Wyrownania Histogramu (Bonus) ---")
     
     img_gray = img_pil.convert("L")
     img_gray_np = np.array(img_gray)
@@ -111,7 +111,7 @@ def improve_quality_with_eq(img_pil):
     
     hist_improved, bins_improved = np.histogram(img_eq_np.ravel(), bins=256, range=[0, 256])
     print("Dane Histogramu Po Korekcji:")
-    print("Wartość | Liczba Pikseli")
+    print("Wartosc | Liczba Pikseli")
     print("-------------------------")
     intensities = [0, 1, 50, 127, 200, 254, 255]
     for i in intensities:
@@ -135,8 +135,8 @@ if __name__ == "__main__":
             img_improved = improve_quality_with_eq(img_pil)
             
             hist_improved_data = np.array(img_improved).ravel()
-            print("\n--- Ponowna Analiza Poprawionego Zdjęcia ---")
+            print("\n--- Ponowna Analiza Poprawionego Zdjecia ---")
             is_flawed_new, quality_score_new = assess_quality(hist_improved_data)
             print(f"NOWY WYNIK PO KOREKCJI: {quality_score_new}")
         else:
-            print("\nZdjęcie nie wymaga poprawy jakości.")
+            print("\nZdjecie nie wymaga poprawy jakosci.")
